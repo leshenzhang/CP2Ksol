@@ -283,17 +283,6 @@ GCE| dyn  step <n>  md_step <i>  N_e <x> e  dU <y> V  meas <T|F>  P_n <p>  Omega
 
 `tests/fivepoint/` 是 Pt(111) 4×4×4 在 SE-NLPB 下的五点充电扫描：每个算例运行 `cp2k.psmp -i fp_x00.inp -o fp_x00.out`，然后 `python3 fit_fivepoint.py fp_*.out`。它复现 C = 1.1764 e/V = 17.70 µF/cm² 和 U_pzc = 0.8500 V vs SHE。
 
-## 已知限制
-
-- 隐式溶剂下没有解析应力张量：请求解析应力会中止，并提示改用 `STRESS_TENSOR NUMERICAL`，所以 `CELL_OPT` 和 `NPT` 需要数值应力。
-- 带 k 点的 SCCS 会打印尚未充分验证的警告。k 点网格上的恒电势电极需要 `UPDATE_SCHEME CAPACITANCE`、`FERMI_DIRAC` 展宽，并且不能有固定磁矩。
-- 恒电势电极要求用带 Fermi–Dirac 展宽的对角化，不支持轨道变换。
-- `UKS` 只测试了单重态，含 k 点和不含 k 点都测过。从 `MULTIPLICITY 3` 出发会收敛回非磁态，即使同一 N_e 下有能量更低的高自旋解，所以到不了自旋极化的巨正则态。`UKS` 配标准算法以外的对角化算法没有测试；`UKS` 配 `CAPACITANCE` 或 `DYNAMICS` 时，`DIAG_SUB_SCF` 和 `ALGORITHM LANCZOS` 会中止。
-- `UPDATE_SCHEME DYNAMICS`：在 323 原子的膜上，扩展能 H_ext 在短时间运行里有偏差，来自离子部分，原因尚未查明。
-- 在小晶胞上，默认的 `COARSE_SPACE_IONS`、`SCF_TOL_JUMP` 和 `COLD_START_FROM_LAST` 并不总是更快；`SCF_TOL_JUMP 0` 能消除某些晶胞上的变慢，却会让另一些晶胞重新变慢。
-- SE（线性介电配 `DIELECTRIC_RADIUS` 0.7 Å）对孤立的小阳离子太强；代码会警告 SCF 可能塌缩。
-- `METHOD SAA_ANDREUSSI` 带有 CP2K 2026.2 上游的一个错误，本代码保持原样：`pw_scale(u, 1.0_dp/ff%array(0, 0, 0))`（打补丁后 `qs_sccs.F` 的第 1246 行，原版的第 551 行）在大多数 rank 并不拥有的下标上读取分布式网格，所以结果依赖 rank 数。这个方法不是本代码添加或验证的。
-- 和所有隐式模型一样，没有溶剂–金属 Pauli 排斥，所以金属上的零电荷电位偏正，Helmholtz 电容偏低。
 
 ## 引用与许可
 
