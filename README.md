@@ -283,17 +283,6 @@ Decks that must abort, and restart decks that need the restart file of an earlie
 
 `tests/fivepoint/` holds the five-point charging scan of Pt(111) 4×4×4 with SE-NLPB: `cp2k.psmp -i fp_x00.inp -o fp_x00.out` for each deck, then `python3 fit_fivepoint.py fp_*.out`. It reproduces C = 1.1764 e/V = 17.70 µF/cm² and U_pzc = 0.8500 V vs SHE.
 
-## Known limitations
-
-- No analytic stress tensor with the implicit solvent: an analytic stress request aborts and names `STRESS_TENSOR NUMERICAL` as the alternative, so `CELL_OPT` and `NPT` need the numerical stress.
-- SCCS with k-points prints a warning that it is not fully validated. The constant-potential electrode on a k-point mesh needs `UPDATE_SCHEME CAPACITANCE`, `FERMI_DIRAC` smearing and no fixed magnetic moment.
-- The constant-potential electrode requires diagonalisation with Fermi–Dirac smearing; orbital transformation is not supported.
-- `UKS` is tested for the singlet, with and without k-points. A start from `MULTIPLICITY 3` converges back to the non-magnetic state even when a high-spin solution at the same N_e lies lower, so spin-polarised grand-canonical states are not reached. `UKS` with diagonalisation algorithms other than the standard one is not tested; `UKS` with `CAPACITANCE` or `DYNAMICS` aborts for `DIAG_SUB_SCF` and `ALGORITHM LANCZOS`.
-- `UPDATE_SCHEME DYNAMICS`: on a 323-atom film the extended energy H_ext shows a deviation over short runs that comes from the ionic part; its cause is not identified.
-- On small cells the defaults `COARSE_SPACE_IONS`, `SCF_TOL_JUMP` and `COLD_START_FROM_LAST` are not always faster; `SCF_TOL_JUMP 0` removes the slowdown on some cells and makes others slower again.
-- SE (`DIELECTRIC_RADIUS` 0.7 Å with a linear dielectric) is too strong for isolated small cations; the code warns that the SCF may collapse.
-- `METHOD SAA_ANDREUSSI` carries an upstream CP2K 2026.2 bug that this code leaves as it is: `pw_scale(u, 1.0_dp/ff%array(0, 0, 0))` (line 1246 of the patched `qs_sccs.F`, line 551 of the original) reads a distributed grid at an index that most ranks do not own, so the result depends on the rank count. The method is not one that this code adds or validates.
-- As with implicit models in general, there is no solvent–metal Pauli repulsion, so the potential of zero charge on metals comes out too positive and the Helmholtz capacitance too low.
 
 ## Citing and license
 
